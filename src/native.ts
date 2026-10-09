@@ -7,7 +7,9 @@ import { ClientSideConnection, ndJsonStream } from '@agentclientprotocol/sdk';
 import type { Chat } from './shared.ts';
 
 export async function findCLI(name: string): Promise<string | undefined> {
-  for (const folder of (process.env.PATH || '').split(delimiter)) for (const suffix of process.platform === 'win32' ? ['.exe', '.cmd', ''] : ['']) {
+  // Worker threads get a case-sensitive copy of process.env, and Windows names the variable "Path".
+  const search = Object.entries(process.env).find(([key]) => key.toUpperCase() === 'PATH')?.[1] || '';
+  for (const folder of search.split(delimiter)) for (const suffix of process.platform === 'win32' ? ['.exe', '.cmd', ''] : ['']) {
     const path = join(folder, name + suffix); try { await access(path); return path; } catch {}
   }
 }
